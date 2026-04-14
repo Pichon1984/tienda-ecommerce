@@ -1,0 +1,48 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ocupa toda la ventana */
+}
+
+main {
+  flex: 1; /* empuja el footer hacia abajo */
+}
+
+footer {
+  margin-top: auto; /* se queda al fondo */
+}
+
+/* Estado normal: texto blanco */
+.social-link span {
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+/* Hover Instagram */
+.social-link:hover .fa-instagram + span {
+  color: #E1306C; /* rosa oficial Instagram */
+}
+
+/* Hover Correo (Gmail) */
+.social-link:hover .fa-envelope + span {
+  color: #EA4335; /* rojo oficial Gmail */
+}
+
+/* Hover WhatsApp */
+.social-link:hover .fa-whatsapp + span {
+  color: #25D366; /* verde oficial WhatsApp */
+}
+
+/* Hover Facebook */
+.social-link:hover .fa-facebook + span {
+  color: #1877F2; /* azul oficial Facebook */
+}
+html {
+  scroll-behavior: smooth;
+}
