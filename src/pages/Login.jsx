@@ -1,25 +1,33 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 importar hook
+import { useNavigate } from "react-router-dom";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // 👈 inicializar
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      onLogin(true);
-      navigate("/dashboard"); // 👈 redirigir al Dashboard
-    } else {
-      alert(data.error || "Error en login");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      console.log("Respuesta login:", data);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        onLogin(true);
+        navigate("/dashboard");
+      } else {
+        alert(data.error || "Error en login");
+      }
+    } catch (err) {
+      console.error("❌ Error en login:", err);
+      alert("No se pudo conectar con el servidor");
     }
   };
 
@@ -50,7 +58,13 @@ export default function Login({ onLogin }) {
               required
             />
           </div>
-          <button type="submit" className="btn btn-success w-100">Ingresar</button>
+          <button
+            type="submit"
+            className="btn btn-success w-100"
+            disabled={!email || !password}
+          >
+            Ingresar
+          </button>
         </form>
       </div>
     </div>

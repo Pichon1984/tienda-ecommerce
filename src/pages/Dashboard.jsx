@@ -7,12 +7,16 @@ export default function Dashboard({ products, setProducts }) {
   const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/productos", {
-      headers: { Authorization: `Bearer ${token}` }
+  fetch("http://localhost:5000/api/productos", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Respuesta productos:", data);
+      setProducts(data.products); // 👈 usar la propiedad correcta
     })
-      .then(res => res.json())
-      .then(data => setProducts(data));
-  }, [token, setProducts]);
+    .catch(err => console.error("❌ Error cargando productos:", err));
+}, [token, setProducts]);
 
   const handleProductAdded = (newProduct) => {
     setProducts([...products, newProduct]);
