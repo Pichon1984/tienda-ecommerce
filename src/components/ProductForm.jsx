@@ -65,25 +65,21 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
     }
   };
 
-  const eliminarImagenVariante = (indexVariante, indexImagen) => {
-    const copia = [...producto.variantes];
-    copia[indexVariante].imagenes = copia[indexVariante].imagenes.filter((_, i) => i !== indexImagen);
-    setProducto({ ...producto, variantes: copia });
-  };
-
+  // 👉 Agregar fila de talle con stock vacío
   const agregarFilaTalleVariante = (index) => {
     const copia = [...producto.variantes];
-    copia[index].tallesUnidades.push({ talle: "", stock: 0 });
+    copia[index].tallesUnidades.push({ talle: "", stock: "" });
     setProducto({ ...producto, variantes: copia });
   };
 
+  // 👉 Cambiar valor de talle o stock (mantiene texto mientras editás)
   const cambiarFilaTalleVariante = (indexVariante, indexTalle, campo, valor) => {
     const copia = [...producto.variantes];
-    copia[indexVariante].tallesUnidades[indexTalle][campo] =
-      campo === "stock" ? Number(valor) || 0 : valor;
+    copia[indexVariante].tallesUnidades[indexTalle][campo] = valor;
     setProducto({ ...producto, variantes: copia });
   };
 
+  // 👉 Eliminar fila de talle
   const eliminarFilaTalleVariante = (indexVariante, indexTalle) => {
     const copia = [...producto.variantes];
     copia[indexVariante].tallesUnidades = copia[indexVariante].tallesUnidades.filter((_, i) => i !== indexTalle);
@@ -98,7 +94,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
 
     const nuevoProducto = {
       name: producto.nombre,
-      price: Number(parseFloat(producto.precio).toFixed(2)), // 👈 aseguramos número
+      price: Number(parseFloat(producto.precio).toFixed(2)),
       description: producto.descripcion,
       category: producto.categoria,
       imageUrl: producto.variantes[0]?.imagenes[0] || "",
@@ -108,7 +104,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
         imagenes: v.imagenes,
         sizes: v.tallesUnidades.map((t) => ({
           size: t.talle,
-          stock: t.stock,
+          stock: Number(t.stock) || 0, // 👈 conversión segura al guardar
         })),
       })),
       createdAt: new Date().toISOString(),
@@ -117,7 +113,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
     try {
       setCargando(true);
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/productos", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/productos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -212,6 +208,11 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
               onChange={(e) => setProducto({ ...producto, descripcion: e.target.value })}
             />
           </Form.Group>
+
+          {/* Vista previa con saltos de línea */}
+          <div className="mt-2" style={{ whiteSpace: "pre-line" }}>
+            {producto.descripcion.replace(/\.\s*/g, ".\n")}
+          </div>
         </Col>
       </Row>
 
@@ -255,7 +256,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
                   ))}
                 </div>
               </Col>
-               </Row>
+            </Row>
 
             <Table bordered size="sm" responsive>
               <thead>
@@ -284,7 +285,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
                         onChange={(e) =>
                           cambiarFilaTalleVariante(i, k, "stock", e.target.value)
                         }
-                        min={0}
+                        placeholder="Cantidad"
                       />
                     </td>
                     <td>

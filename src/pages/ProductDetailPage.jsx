@@ -120,7 +120,12 @@ export default function ProductDetailPage() {
             </h4>
           )}
 
-          <p>{product.description}</p>
+          {/* ✅ Descripción con saltos de línea */}
+          <div className="mb-3">
+            {product.description.split(".").map((parte, i) =>
+              parte.trim() ? <p key={i}>{parte.trim()}</p> : null
+            )}
+          </div>
 
           {/* Colores */}
           <h5>Colores</h5>
