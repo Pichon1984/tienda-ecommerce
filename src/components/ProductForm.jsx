@@ -209,10 +209,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
             />
           </Form.Group>
 
-          {/* Vista previa con saltos de línea */}
-          <div className="mt-2" style={{ whiteSpace: "pre-line" }}>
-            {producto.descripcion.replace(/\.\s*/g, ".\n")}
-          </div>
+         
         </Col>
       </Row>
 
