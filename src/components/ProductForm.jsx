@@ -18,7 +18,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
   const agregarVariante = () => {
     setProducto((prev) => ({
       ...prev,
-      variantes: [...prev.variantes, { color: "", imagenes: [], tallesUnidades: [] }],
+      variantes: [...prev.variantes, { color: "", imageUrl: "", imagenes: [], tallesUnidades: [] }],
     }));
   };
 
@@ -28,7 +28,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
     setProducto({ ...producto, variantes: copia });
   };
 
-  // Subir múltiples imágenes a Cloudinary
+  // Subir imágenes a Cloudinary
   const subirImagenVariante = async (index, e) => {
     const archivos = Array.from(e.target.files);
     if (archivos.length === 0) return;
@@ -46,16 +46,20 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
           const res = await fetch(url, { method: "POST", body: formData });
           const data = await res.json();
 
-          if (data.secure_url) {
-            return data.secure_url;
-          } else {
-            throw new Error("Error al subir imagen");
-          }
+          if (data.secure_url) return data.secure_url;
+          throw new Error("Error al subir imagen");
         })
       );
 
       const copia = [...producto.variantes];
-      copia[index].imagenes.push(...urls);
+
+      if (!copia[index].imageUrl && urls.length > 0) {
+        copia[index].imageUrl = urls[0];
+        copia[index].imagenes.push(...urls.slice(1));
+      } else {
+        copia[index].imagenes.push(...urls);
+      }
+
       setProducto({ ...producto, variantes: copia });
     } catch (err) {
       console.error("Error al subir imagen:", err);
@@ -65,6 +69,12 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
     }
   };
 
+  const eliminarImagenVariante = (indexVariante, indexImagen) => {
+    const copia = [...producto.variantes];
+    copia[indexVariante].imagenes = copia[indexVariante].imagenes.filter((_, i) => i !== indexImagen);
+    setProducto({ ...producto, variantes: copia });
+  };
+
   // 👉 Agregar fila de talle con stock vacío
   const agregarFilaTalleVariante = (index) => {
     const copia = [...producto.variantes];
@@ -72,14 +82,13 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
     setProducto({ ...producto, variantes: copia });
   };
 
-  // 👉 Cambiar valor de talle o stock (mantiene texto mientras editás)
+  // 👉 Cambiar valor de talle o stock
   const cambiarFilaTalleVariante = (indexVariante, indexTalle, campo, valor) => {
     const copia = [...producto.variantes];
     copia[indexVariante].tallesUnidades[indexTalle][campo] = valor;
     setProducto({ ...producto, variantes: copia });
   };
 
-  // 👉 Eliminar fila de talle
   const eliminarFilaTalleVariante = (indexVariante, indexTalle) => {
     const copia = [...producto.variantes];
     copia[indexVariante].tallesUnidades = copia[indexVariante].tallesUnidades.filter((_, i) => i !== indexTalle);
@@ -97,14 +106,14 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
       price: Number(parseFloat(producto.precio).toFixed(2)),
       description: producto.descripcion,
       category: producto.categoria,
-      imageUrl: producto.variantes[0]?.imagenes[0] || "",
+      imageUrl: producto.variantes[0]?.imageUrl || "",
       colors: producto.variantes.map((v) => ({
         name: v.color,
-        imageUrl: v.imagenes[0] || "",
+        imageUrl: v.imageUrl || "",
         imagenes: v.imagenes,
         sizes: v.tallesUnidades.map((t) => ({
           size: t.talle,
-          stock: Number(t.stock) || 0, // 👈 conversión segura al guardar
+          stock: Number(t.stock) || 0,
         })),
       })),
       createdAt: new Date().toISOString(),
@@ -208,8 +217,6 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
               onChange={(e) => setProducto({ ...producto, descripcion: e.target.value })}
             />
           </Form.Group>
-
-         
         </Col>
       </Row>
 
@@ -233,10 +240,21 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
                   type="file"
                   multiple
                   accept="image/*"
+                  capture="environment"
                   onChange={(e) => subirImagenVariante(i, e)}
                   className="mb-2"
                 />
                 {cargando && <Spinner animation="border" size="sm" className="ms-2" />}
+
+                {/* Imagen principal */}
+                {v.imageUrl && (
+                  <div className="mb-2">
+                    <Image src={v.imageUrl} thumbnail width={100} height={100} />
+                    <div className="small text-center">Principal</div>
+                  </div>
+                )}
+
+               {/* Imágenes adicionales */}
                 <div className="d-flex flex-wrap">
                   {v.imagenes.map((img, j) => (
                     <div key={j} className="me-2 mb-2 position-relative">
@@ -255,6 +273,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
               </Col>
             </Row>
 
+            {/* Talles */}
             <Table bordered size="sm" responsive>
               <thead>
                 <tr>
@@ -316,6 +335,7 @@ const ProductForm = ({ productoInicial = {}, onProductAdded, onCancelar }) => {
         </Button>
       </Form.Group>
 
+      {/* Botones de acción */}
       <div className="mt-3 d-flex justify-content-end flex-wrap">
         {onCancelar && (
           <Button variant="secondary" onClick={onCancelar} className="me-2 mb-2">
