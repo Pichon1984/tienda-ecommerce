@@ -1,8 +1,10 @@
 import axios from "axios";
 
 // Instancia centralizada de Axios
+import axios from "axios";
+
 const api = axios.create({
-  baseURL: "http://localhost:5000/api", // tu backend
+  baseURL: process.env.REACT_APP_API_URL, // ahora dinámico
   headers: {
     "Content-Type": "application/json",
   },
