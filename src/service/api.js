@@ -1,11 +1,10 @@
 import axios from "axios";
 // Loguear la URL base que está usando
-console.log("🔍 API URL en este build:", process.env.REACT_APP_API_URL);
+console.log("🔍 API URL en este build:", import.meta.env.VITE_API_URL);
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL, // ahora dinámico
-  headers: {
-    "Content-Type": "application/json",
-  },
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
 // Interceptor de request: adjunta token si existe
